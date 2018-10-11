@@ -36,20 +36,32 @@ for train, test in stratified_folds:
     x_test, y_test = test[['occurence_spam_word', 'occurence_money', 'nb_digits', 'nb_special', 'nb_upper_letter']].values, test['label'].values
 
     # Initialize and fitting our model
-    classifier = model.ML_model(x_train, y_train, x_test, y_test)
-    classifier.fit_linear_regression()
+    classifier = model.linear_regression_model()
+    classifier.fit(x_train, y_train)
+
+    y_train_predicted = classifier.predict(x_train)
+    y_test_predicted = classifier.predict(x_test)
 
     if VERBOSE:
-        classifier.show_roc()
+        classifier.show_roc(y_test, y_test_predicted, y_train, y_train_predicted)
 
     # Choosing our threeshold thanks to Youden J stats
-    optimum_treeshold = classifier.compute_Youden_J_stats(verbose=VERBOSE)
+    optimum_treeshold, treeshold_FPR_0_001 = classifier.compute_optimal_treeshold(y_test, y_test_predicted, y_train, y_train_predicted, verbose=VERBOSE)
     print('Optimal treeshold is %.2f.'%optimum_treeshold)
+    print('Treeshold for False Positive Rate of 0.1%% is %.2f.'%optimum_treeshold)
     print(' ')
 
     # Getting our final result
-    classifier.evaluate_result(treeshold=optimum_treeshold, verbose=VERBOSE)
+    print('On TRAIN with Optimal treeshold: ')
+    classifier.evaluate_result(y_train, y_train_predicted, treeshold=optimum_treeshold, verbose=VERBOSE)
+
+    print('On TEST with Optimal treeshold: ')
+    classifier.evaluate_result(y_test, y_test_predicted,treeshold=optimum_treeshold, verbose=VERBOSE)
 
     if VERBOSE:
     # if we want to see result with treeshold = 0.5
-        classifier.evaluate_result(treeshold=0.5, verbose=VERBOSE)
+        print('On TRAIN with Treeshold for False Positive Rate of 0.1%%: ')
+        classifier.evaluate_result(y_train, y_train_predicted, treeshold=treeshold_FPR_0_001, verbose=VERBOSE)
+
+        print('On TEST with Treeshold for False Positive Rate of 0.1%%: ')
+        classifier.evaluate_result(y_test, y_test_predicted,treeshold=treeshold_FPR_0_001, verbose=VERBOSE)
