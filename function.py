@@ -159,17 +159,17 @@ def add_feature_occurence_spam_word(train, test):
     commun_normal_msg = counter_normal_msg.most_common(50)
     commun_normal_msg = [i[0] for i in commun_normal_msg]
 
-    only_spam_word = []
+    only_in_spam_word = []
     for i in commun_spam_word:
         if i not in commun_normal_msg:
-            only_spam_word.append(i)
+            only_in_spam_word.append(i)
 
     for indx, row in train.iterrows():
-        train.at[indx, 'occurence_spam_word'] = len([i for i in row['clean_msg'] if i in only_spam_word])
+        train.at[indx, 'occurence_spam_word'] = len([i for i in row['clean_msg'] if i in only_in_spam_word])
     train['occurence_spam_word'] = train['occurence_spam_word'].values/np.max(train['occurence_spam_word'].values)
 
     for indx, row in test.iterrows():
-        test.at[indx, 'occurence_spam_word'] = len([i for i in row['clean_msg'] if i in only_spam_word])
+        test.at[indx, 'occurence_spam_word'] = len([i for i in row['clean_msg'] if i in only_in_spam_word])
     test['occurence_spam_word'] = test['occurence_spam_word'].values/np.max(test['occurence_spam_word'].values)
 
     return train, test

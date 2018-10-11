@@ -5,8 +5,7 @@ import function
 
 ##############  Parameter  ##############
 # Set as true to see all info such as dictionnary example, stratification detail Roc Curb, Youden J stats curb, result with a non-optimal treeshold
-VERBOSE = False
-
+VERBOSE = True
 ##############    Script    ##############
 # Read raw data
 raw_data = pd.read_csv('data.csv', sep=',', dtype={'v1':str, 'v2':str}, encoding='latin-1')
@@ -26,6 +25,7 @@ stratified_folds = function.get_stratified_folds(clean_data, stratify_on='label'
 fold = 1
 for train, test in stratified_folds:
     print('Fold n°%d' % fold)
+    print(' ')
     fold += 1
 
     # Add to our data the number of occurence of commun spam word
@@ -52,4 +52,4 @@ for train, test in stratified_folds:
 
     if VERBOSE:
     # if we want to see result with treeshold = 0.5
-        classifier.evaluate_result(treeshold=0.5)
+        classifier.evaluate_result(treeshold=0.5, verbose=VERBOSE)
