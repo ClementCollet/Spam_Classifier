@@ -101,16 +101,26 @@ def get_stratified_folds(table, stratify_on="label", nb_fold=4, verbose=False):
 
     if verbose:
         # Detail fold repartition
-        print('There is '+str(len(shuffled_data))+' rows, repartition on label ham/spam is '+str([len(shuffled_data_classA), len(shuffled_data_classB)]))
+        print('There is '+str(len(shuffled_data))+' mails, repartition on label normal message/spam is '+str([len(shuffled_data_classA), len(shuffled_data_classB)]))
         print('Each of '+str(nb_fold)+' fold will have a [train,test] size of '+str([len(train), len(test)])+', with repartition on label ham/spam = '+str([[nb_rows_per_stratif_classA, nb_rows_per_stratif_classB],[nb_rows_per_stratif_classA*(nb_fold-1), (nb_fold-1)*nb_rows_per_stratif_classB]]))
 
 
     return output
 
 # Show most used word in both sub dataset
-def describe_dico(table, column='clean_msg'):
+def study_selected_features(table):
+    special = ['!', ';', '?', '<', '>', '#', '$', '€', '£']
+    for indx, row in table.iterrows():
+        table.at[indx, 'nb_digits'] = len([i for i in row['raw_msg'] if i in digits])
+        table.at[indx, 'nb_special'] = len([i for i in row['raw_msg'] if i in special])
+        table.at[indx, 'nb_uppercase_letter'] = len([i for i in row['raw_msg'] if i.isupper()])
+        table.at[indx, 'len_msg'] = len(row['raw_msg'])
+
     temp_spam = table[table.label == 1]
-    spam_dictionary = temp_spam[column].values
+    temp_normal_msg = table[table.label == 0]
+
+    print('Concerning most used word in spam')
+    spam_dictionary = temp_spam['clean_msg'].values
     spam_dictionary = [word for sentence in spam_dictionary for word in sentence]
     counter_spam = collections.Counter(spam_dictionary)
     print('There is '+str(len(spam_dictionary))+ ' words in '+str(len(temp_spam))+' spams, the dictionary containt '+str(len(list(counter_spam)))+' differents words.')
@@ -118,8 +128,7 @@ def describe_dico(table, column='clean_msg'):
     print(counter_spam.most_common(20))
     print(' ')
 
-    temp_normal_msg = table[table.label == 0]
-    spam_dictionary = temp_normal_msg[column].values
+    spam_dictionary = temp_normal_msg['clean_msg'].values
     spam_dictionary = [word for sentence in spam_dictionary for word in sentence]
     counter_normal_msg = collections.Counter(spam_dictionary)
     print('There is '+str(len(spam_dictionary))+' words in '+str(len(temp_normal_msg))+' normal message, the dictionary containt '+str(len(list(counter_normal_msg)))+' differents words.')
@@ -127,19 +136,38 @@ def describe_dico(table, column='clean_msg'):
     print(counter_normal_msg.most_common(20))
     print(' ')
 
+    print('Concerning number of digits used :')
+    print('for spam : mean %.1f +/- %.1f ' % (np.mean(temp_spam.nb_digits.values), np.std(temp_spam.nb_digits.values)))
+    print('for normal message : mean %.1f +/- %.1f ' % (np.mean(temp_normal_msg.nb_digits.values), np.std(temp_normal_msg.nb_digits.values)))
+    print(' ')
+
+    print('Concerning number of special used :')
+    print('for spam : mean %.1f +/- %.1f ' % (np.mean(temp_spam.nb_special.values), np.std(temp_spam.nb_special.values)))
+    print('for normal message : mean %.1f +/- %.1f ' % (np.mean(temp_normal_msg.nb_special.values), np.std(temp_normal_msg.nb_special.values)))
+    print(' ')
+
+    print('Concerning number uppercase used :')
+    print('for spam : mean %.1f +/- %.1f ' % (np.mean(temp_spam.nb_uppercase_letter.values), np.std(temp_spam.nb_uppercase_letter.values)))
+    print('for normal message : mean %.1f +/- %.1f ' % (np.mean(temp_normal_msg.nb_uppercase_letter.values), np.std(temp_normal_msg.nb_uppercase_letter.values)))
+    print(' ')
+
+    print('Concerning length of message :')
+    print('for spam : mean %.1f +/- %.1f ' % (np.mean(temp_spam.len_msg.values), np.std(temp_spam.len_msg.values)))
+    print('for normal message : mean %.1f +/- %.1f ' % (np.mean(temp_normal_msg.len_msg.values), np.std(temp_normal_msg.len_msg.values)))
+    print(' ')
+
 # Add features to our dataset
 def select_features(table):
-    special = ['!', ';', '?', '<', '>', '#']
+    special = ['!', ';', '?', '<', '>', '#', '$', '€', '£']
     for indx, row in table.iterrows():
-        table.at[indx, 'occurence_money'] = len([i for i in row['raw_msg'] if i in ['$', '€', '£']])
         table.at[indx, 'nb_digits'] = len([i for i in row['raw_msg'] if i in digits])
         table.at[indx, 'nb_special'] = len([i for i in row['raw_msg'] if i in special])
-        table.at[indx, 'nb_upper_letter'] = len([i for i in row['raw_msg'] if i.isupper()])
-
-    table['occurence_money'] = table['occurence_money'].values/np.max(table['occurence_money'].values)
+        table.at[indx, 'nb_uppercase_letter'] = len([i for i in row['raw_msg'] if i.isupper()])
+        table.at[indx, 'len_msg'] = len(row['raw_msg'])
     table['nb_digits'] = table['nb_digits'].values/np.max(table['nb_digits'].values)
     table['nb_special'] = table['nb_special'].values/np.max(table['nb_special'].values)
-    table['nb_upper_letter'] = table['nb_upper_letter'].values/np.max(table['nb_upper_letter'].values)
+    table['nb_uppercase_letter'] = table['nb_uppercase_letter'].values/np.max(table['nb_uppercase_letter'].values)
+    table['len_msg'] = table['len_msg'].values/np.max(table['len_msg'].values)
 
     return table
 
