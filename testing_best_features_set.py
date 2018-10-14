@@ -24,7 +24,10 @@ clean_data = function.select_features(clean_data)
 stratified_folds = function.get_stratified_folds(clean_data, stratify_on='label', nb_fold=4, verbose=VERBOSE)
 
 result = []
-select_features_to_test = [['occurence_spam_word', 'nb_digits', 'nb_uppercase_letter'],
+select_features_to_test = [['occurence_spam_word'],
+                            ['occurence_spam_word', 'nb_digits'],
+                            ['occurence_spam_word', 'nb_digits', 'len_msg'],
+                            ['occurence_spam_word', 'nb_digits', 'nb_uppercase_letter'],
                             ['occurence_spam_word', 'nb_digits', 'nb_uppercase_letter','len_msg'],
                             ['occurence_spam_word', 'nb_digits', 'nb_special', 'nb_uppercase_letter','len_msg']]
 
@@ -59,10 +62,10 @@ for set_features in select_features_to_test:
 
 result = np.asarray(result)
 
-result_name = ['Precision', 'Recal Spam', 'Recal message', 'F1 score']
-for i in range(3):
-    print('Testing model with '+str(select_features_to_test[i]))
+result_name = ['Precision', 'Recal Spam', 'Recal message', 'F1 score Spam']
+for index_set_features in range(len(select_features_to_test)):
+    print('Testing model with '+str(select_features_to_test[index_set_features]))
     print('Result on test is :')
-    mean = np.mean(result[i], axis=0)
-    for j in range(4):
-        print(result_name[j]+' => %.3f ' % mean[j])
+    mean = np.mean(result[index_set_features], axis=0)
+    for index_result_name in range(4):
+        print(result_name[index_result_name]+' => %.2f ' % mean[index_result_name])

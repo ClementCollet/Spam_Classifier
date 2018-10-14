@@ -6,7 +6,7 @@ import function
 
 ##############  Parameter  ##############
 # Set as true to see all info such as dictionnary example, stratification detail Roc Curb, Youden J stats curve, result with an other treshold
-VERBOSE = False
+VERBOSE = True
 NB_FOLD = 10
 ##############    Script    ##############
 # Read raw data
@@ -25,7 +25,7 @@ clean_data = function.select_features(clean_data)
 stratified_folds = function.get_stratified_folds(clean_data, stratify_on='label', nb_fold=NB_FOLD, verbose=VERBOSE)
 
 result = []
-fold = 0
+fold = 1
 for train, test in stratified_folds:
     print('Fold n°%d' % fold)
     print(' ')
@@ -35,8 +35,8 @@ for train, test in stratified_folds:
     train, test = function.add_feature_occurence_spam_word(train, test)
 
     # Selectionning our model's input and output
-    x_train, y_train = train[['occurence_spam_word', 'nb_digits', 'nb_uppercase_letter']].values, train['label'].values
-    x_test, y_test = test[['occurence_spam_word', 'nb_digits', 'nb_uppercase_letter']].values, test['label'].values
+    x_train, y_train = train[['occurence_spam_word', 'nb_digits', 'len_msg']].values, train['label'].values
+    x_test, y_test = test[['occurence_spam_word', 'nb_digits', 'len_msg']].values, test['label'].values
 
     # Initialize and fitting our model
     classifier = model.linear_regression_model()
@@ -71,6 +71,6 @@ for train, test in stratified_folds:
 
 result = np.asarray(result)
 result_name = ['Precision', 'Recal Spam', 'Recal message', 'F1 score Spam']
-for i in range(4):
+for index_result_name in range(4):
     mean = np.mean(result, axis=0)
-    print(result_name[i]+' => %.2f' % mean[i])
+    print(result_name[index_result_name]+' => %.2f' % mean[index_result_name])
